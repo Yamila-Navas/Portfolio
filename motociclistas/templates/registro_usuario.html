@@ -1,18 +1,26 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>login</title>
-</head>
-<body>
-    <h1>todo ok</h1>
-    
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
 
-    <form action="{% url 'motociclistas:registro_usuario' %}" method='POST' novalidate>
-        {% csrf_token %}
-        {{form}}
-        <input type="submit" value="enviar">
-    </form>
-</body>
-</html>
+
+{% block menu %}
+  {% include "layout/menu_inicial.html" %}
+{% endblock menu %}
+
+
+{% block contenido %}
+    <div class="container my-4 " >
+        <div class="row justify-content-center">
+            <div class="col-sm-12 col-md-6 col-lg-6 col-xl-6">
+                <form action="{% url 'motociclistas:registro_usuario' %}" method='POST' novalidate>
+                    {% csrf_token %}
+                    {{ form | crispy }}
+                    <div class = 'd-grid gap-2'>
+                        <input type="submit" value='Guardar' class= 'btn btn-success'>
+                        <input type="reset" value='Limpiar' class= 'btn btn-light'>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock contenido %}
+   

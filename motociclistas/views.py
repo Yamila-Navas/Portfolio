@@ -1,6 +1,5 @@
-from audioop import reverse
-from django.http import HttpResponse, JsonResponse
-from django.shortcuts import render, redirect
+from django.http import  JsonResponse
+from django.shortcuts import get_object_or_404, render, redirect
 from django.urls import reverse_lazy
 from .models import Motociclistas
 from .forms import RegistroForm
@@ -26,10 +25,9 @@ def registro_usuario(req):
             usuario = form.save()
             #autenticacion de usuario:
             login(req, usuario)
-            return JsonResponse({'success': True, 'message': 'Usuario registrado y autenticado correctamente.'})
+            return redirect(reverse_lazy('motociclistas:iniciar_sesion'))
         else:
-            errors = form.errors
-            return JsonResponse({'success': False, 'errors': errors})   
+            return render(req, 'registro_usuario.html', context)  
     else:
         form = RegistroForm()
 
@@ -66,12 +64,14 @@ def sesion(req):
 
     nombre = req.user.nombre
     apellido = req.user.apellido
+    id_usuario = req.user.id
 
 
     context = {
         'horarios' : horarios,
         'nombre' : nombre,
-        'apellido' : apellido
+        'apellido' : apellido, 
+        'id_usuario' : id_usuario
     }
 
     return render(req, 'sesion_usuario.html', context)
@@ -82,13 +82,41 @@ def cerrar_sesion(req):
     return redirect('motociclistas:index')
 
 
-'''@login_required
+@login_required
 def solicitud(req, id):
-    horario = Motociclistas.objects.get(id = id)
+    horario = get_object_or_404(Motociclistas, id=id)
 
     if horario.motociclistas >= 1:
-        horario.motociclistas = horario.motociclistas - 1'''
+        horario.motociclistas = horario.motociclistas - 1
+        horario.save()
+        nuevo_valor =  horario.motociclistas 
 
+        return JsonResponse({'success': True, 'message': 'Accion exitosa', 'nuevo_valor':horario.motociclistas })       
+
+    return JsonResponse({'success': False, 'message': 'No hay motociclistas disponibles en este horario.'})
+
+
+@login_required
+def liberar(req, id):
+    horario = get_object_or_404(Motociclistas, id=id)
+
+    if horario.motociclistas <= 7:
+        horario.motociclistas = horario.motociclistas + 1
+        horario.save()
+        
+
+        return JsonResponse({'success': True, 'message': 'Accion exitosa', 'nuevo_valor':horario.motociclistas })
+
+    return JsonResponse({'success': False, 'message': 'Ocurrio un error'})
+
+
+def restablecer(req):
+    horarios = Motociclistas.objects.all()
+    for horario in horarios:
+        horario.motociclistas = 8
+        horario.save()
+    
+    return JsonResponse({'success': True, 'massege': 'valores restablecidos'})
 
 
 
